@@ -1,46 +1,53 @@
 @echo off
 chcp 65001 > nul
 cls
-title BAT COMPILER v4.5
+title BAT COMPILER v5.0 - Visual Studio Edition
 
-:: Define output directory (one level up) and filename
+:: Set color scheme: Blue background (1), White text (F)
+color 1F
+
+:: Define output directory (one level up / parent folder)
 set "output_dir=.."
 set "output_file=%output_dir%\compiled_output.bat"
 
-:: Initialize the compiled file with default safe header
+:: Initialize the compiled file with default header
 echo @echo off > "%output_file%"
 echo chcp 65001 ^> nul >> "%output_file%"
 echo cls >> "%output_file%"
 
 echo ===================================================
-echo                 BAT COMPILER v4.5                  
+echo     BAT COMPILER v5.0 - VISUAL STUDIO EDITION     
 echo ===================================================
-echo  Type ANY command. Shorthands: ec, pa, cl, co, fs.
-echo  Special: Start with ':' to declare a label.
+echo  [IntelliSense Active] Suggestions will appear.
+echo  File saves one directory higher (parent folder).
 echo  Type 'exit' to finish compilation.
 echo ===================================================
 echo.
 
 :loop
 set "cmd_input="
-:: Request input from the user
+echo [IntelliSense] Suggestions: ec (echo) ^| pa (pause) ^| cl (cls) ^| co (color) ^| fs (fullscreen) ^| del_head (delete @echo off)
 set /p cmd_input="[COMPILER] Enter command: "
 
-:: Handle empty input safely
 if not defined cmd_input goto loop
-
-:: Strip potential dangerous quote symbols
 set "cmd_input=%cmd_input:"=%"
 
-:: Terminate compilation block if user types exit
 if /i "%cmd_input%"=="exit" goto finalize
 
+:: --- SPECIAL OPERATIONS ---
+:: Remove the automated @echo off header from the output file if requested
+if /i "%cmd_input%"=="del_head" (
+    echo. > "%output_file%"
+    echo [INTELLISENSE] Header @echo off deleted from output file!
+    echo.
+    goto loop
+)
+
 :: --- LABEL ANALYSIS BLOCK ---
-:: Extract the first character to check for label declaration
 set "first_char=%cmd_input:~0,1%"
 if "%first_char%"==":" (
     echo %cmd_input% >> "%output_file%"
-    echo [LABEL] Created loop point: %cmd_input%
+    echo [LABEL] Compiled: %cmd_input%
     echo.
     goto loop
 )
@@ -65,8 +72,7 @@ if /i "%cmd_input%"=="fs" goto do_fullscreen
 if /i "%cmd_input%"=="full" goto do_fullscreen
 if /i "%cmd_input%"=="fullscreen" goto do_fullscreen
 
-:: --- UNIVERSAL PASSTHROUGH (1000+ COMMANDS ENGINE) ---
-:: If input is not a shorthand, write it directly to the file
+:: --- UNIVERSAL PASSTHROUGH ENGINE ---
 echo %cmd_input% >> "%output_file%"
 echo [RAW] Compiled as-is: %cmd_input%
 echo.
@@ -75,6 +81,7 @@ goto loop
 :: --- SHORTHAND PROCESSORS ---
 :do_echo
 set "text_arg="
+echo [IntelliSense hint] Type the message you want to print on the screen.
 set /p text_arg="  -^> Enter text to print: "
 echo echo %text_arg% >> "%output_file%"
 echo [SUCCESS] Compiled: echo %text_arg%
@@ -95,7 +102,8 @@ goto loop
 
 :do_color
 set "color_arg="
-set /p color_arg="  -^> Enter color attribute (e.g. 0A): "
+echo [IntelliSense hint] Standard values: 0A (Green), 0C (Red), 1F (Blue/White).
+set /p color_arg="  -^> Enter color attribute: "
 echo color %color_arg% >> "%output_file%"
 echo [SUCCESS] Compiled: color %color_arg%
 echo.
@@ -113,6 +121,5 @@ echo ===================================================
 echo [BUILD COMPLETE] File successfully saved to:
 echo %output_file%
 echo ===================================================
-:: Open the newly built file in Notepad for immediate inspection
 start notepad.exe "%output_file%"
 exit
